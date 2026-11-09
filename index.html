@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Компьютерные блоки - CRUD</title>
+    <style>
+        /* Общие стили и светлая тема (по умолчанию) */
+        :root {
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --nav-bg: #222222;
+            --nav-text: #ffffff;
+            --img-bg: #ececec;
+            --modal-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #ccc;
+            --price-color: #dc3545;
+        }
+
+        /* Тёмная тема */
+        body.dark {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --nav-bg: #1a1a1a;
+            --nav-text: #e0e0e0;
+            --img-bg: #2a2a2a;
+            --modal-bg: #1e1e1e;
+            --input-bg: #2c2c2c;
+            --input-border: #555;
+            --price-color: #ff6b6b;
+        }
+
+        body {
+            font-family: Arial, sans-serif; margin: 0; padding: 0; text-align: center;
+            background-color: var(--bg-color); color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s; overflow-x: hidden;
+        }
+        
+        h1 { margin-top: 20px; }
+
+        /* Навигация */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center; 
+            background: var(--nav-bg); padding: 15px; color: var(--nav-text); 
+            position: relative; z-index: 50; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .menu { list-style: none; display: flex; gap: 15px; margin: 0; padding: 0; }
+        .menu li { display: inline; }
+        .menu a { color: var(--nav-text); text-decoration: none; padding: 10px 15px; transition: 0.3s; border-radius: 5px; }
+        .menu a:hover { background: rgba(255,255,255,0.1); }
+        .burger { display: none; font-size: 24px; cursor: pointer; color: var(--nav-text); }
+        
+        /* Тумблер темы */
+        .theme-switch {
+            position: absolute; right: 20px; top: 12px; width: 50px; height: 26px;
+            background-color: #ccc; border-radius: 34px; cursor: pointer; transition: 0.4s;
+        }
+        .theme-switch::after {
+            content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+            background-color: white; border-radius: 50%; transition: 0.4s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        body.dark .theme-switch { background-color: #4CAF50; }
+        body.dark .theme-switch::after { transform: translateX(24px); }
+        
+        /* CRUD элементы */
+        .admin-controls { margin: 20px; }
+        .btn { padding: 10px 20px; cursor: pointer; font-weight: bold; border: none; border-radius: 5px; font-size: 16px; transition: 0.3s; }
+        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
+        .btn-add { background: #28a745; color: white; }
+        .btn-edit { background: #ffc107; color: black; }
+        .btn-delete { background: #dc3545; color: white; }
+        
+        /* Галерея */
+        .image-gallery { display: flex; justify-content: center; flex-wrap: wrap; gap: 25px; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .gallery-item { 
+            background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: 0.3s; width: 320px;
+            display: flex; flex-direction: column;
+        }
+        .gallery-item:hover { transform: translateY(-7px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        
+        /* Исправленные картинки в карточках */
+        .img-container { background: var(--img-bg); height: 250px; display: flex; justify-content: center; align-items: center; padding: 10px; }
+        .gallery-item img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .image-caption { padding: 15px; font-weight: bold; font-size: 18px; }
+
+        /* Модальные окна */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(3px); }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { background: var(--modal-bg); padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; text-align: left; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: var(--text-color); transition: 0.2s; }
+        .close-btn:hover { color: #dc3545; }
+        
+        /* Исправленная картинка внутри модального окна */
+        .modal-img-wrapper { background: var(--img-bg); padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; height: 300px; }
+        .modal-img-wrapper img { width: 100%; height: 100%; object-fit: contain; }
+
+        .specs-text { font-size: 15px; line-height: 1.6; color: var(--text-color); margin-bottom: 15px; }
+        .specs-text b { color: #888; }
+        .price-text { color: var(--price-color); font-size: 22px; margin: 0 0 20px 0; }
+        
+        /* Форма */
+        .crud-form { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .crud-form input { padding: 12px; font-size: 15px; border: 1px solid var(--input-border); border-radius: 6px; background: var(--input-bg); color: var(--text-color); transition: 0.3s; }
+        .crud-form input:focus { outline: none; border-color: #4CAF50; box-shadow: 0 0 5px rgba(76, 175, 80, 0.3); }
+        .action-buttons { display: flex; gap: 10px; }
+        .action-buttons .btn { flex: 1; }
+
+        @media (max-width: 768px) {
+            .menu { display: none; flex-direction: column; background: var(--nav-bg); position: absolute; top: 56px; left: 0; width: 100%; text-align: center; padding-bottom: 15px; box-shadow: 0 5px 10px rgba(0,0,0,0.2); }
+            .menu.active { display: flex; } .burger { display: block; }
+            .theme-switch { right: 60px; top: 15px; }
+            .gallery-item { width: 100%; max-width: 350px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="burger" onclick="document.querySelector('.menu').classList.toggle('active')">&#9776;</div>
+        <ul class="menu">
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="onas.html">О нас</a></li>
+            <li><a href="uslugi.html">Услуги</a></li>
+            <li><a href="contact.html">Контакты</a></li>
+        </ul>
+        <div class="theme-switch" onclick="toggleTheme()"></div>
+    </nav>
+
+    <h1>Каталог ПК</h1>
+    
+    <div class="admin-controls">
+        <button class="btn btn-add" onclick="openForm()">+ Добавить новый ПК</button>
+    </div>
+
+    <!-- Read: Галерея товаров -->
+    <div class="image-gallery" id="gallery"></div>
+
+    <!-- Детальный просмотр + кнопки Update/Delete -->
+    <div class="modal-overlay" id="detailModal" onclick="closeModals(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModals(event)">&times;</span>
+            <h2 id="detailTitle" style="margin-top: 0;"></h2>
+            
+            <div class="modal-img-wrapper">
+                <img id="detailImg" src="" alt="">
+            </div>
+            
+            <div id="detailSpecs" class="specs-text"></div>
+            <h3 id="detailPrice" class="price-text"></h3>
+            
+            <div class="action-buttons">
+                <button class="btn btn-edit" id="editBtn">Изменить</button>
+                <button class="btn btn-delete" id="deleteBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Update: Форма -->
+    <div class="modal-overlay" id="formModal" onclick="closeModals(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModals(event)">&times;</span>
+            <h2 id="formTitle" style="margin-top: 0;">Добавить ПК</h2>
+            <form class="crud-form" id="pcForm" onsubmit="savePC(event)">
+                <input type="hidden" id="pcId">
+                <input type="text" id="pcName" placeholder="Название (например: GANSOR-130)" required>
+                <input type="url" id="pcImage" placeholder="Ссылка на картинку (https://...)" required>
+                <input type="text" id="pcPrice" placeholder="Цена (например: 125 000 сом)" required>
+                <input type="text" id="pcCpu" placeholder="Процессор" required>
+                <input type="text" id="pcGpu" placeholder="Видеокарта" required>
+                <input type="text" id="pcRam" placeholder="ОЗУ (например: 32GB)" required>
+                <input type="text" id="pcStorage" placeholder="Накопитель (например: 1TB SSD)" required>
+                <input type="text" id="pcCooling" placeholder="Охлаждение" required>
+                <button type="submit" class="btn btn-add" style="margin-top: 10px;">Сохранить ПК</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация темы при загрузке
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark');
+        }
+
+        // Переключение темы с сохранением
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            if (document.body.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        const defaultProducts = [
+            { id: 1, name: "GANSOR-1301880", image: "https://optim.tildacdn.com/stor6164-3133-4336-b935-393430386332/-/format/webp/37340091.jpg", specs: { cpu: "Intel Core i7-12700K", gpu: "NVIDIA GeForce RTX 3080", ram: "32GB DDR5", storage: "1TB SSD NVMe", cooling: "Жидкостное" }, price: "135 000 сом" },
+            { id: 2, name: "TopComp PG 71729704", image: "https://optim.tildacdn.com/stor3437-6166-4335-a338-663536323935/-/format/webp/77097236.jpg", specs: { cpu: "Intel Core i7-12700K", gpu: "NVIDIA GeForce RTX 3060", ram: "16GB DDR5", storage: "512GB SSD NVMe", cooling: "Воздушное" }, price: "85 000 сом" },
+            { id: 3, name: "Robotcomp", image: "https://optim.tildacdn.com/stor6130-3761-4166-b631-373439353933/-/format/webp/56233252.jpg", specs: { cpu: "Intel Core i3-13100F", gpu: "NVIDIA GeForce GTX 1060", ram: "16GB DDR4", storage: "512GB SSD", cooling: "Воздушное" }, price: "40 000 сом" },
+            { id: 4, name: "Hard Comp Core i5", image: "https://optim.tildacdn.com/stor3132-6436-4439-a561-613639333339/-/format/webp/40276419.jpg", specs: { cpu: "Intel Core i5-13400F", gpu: "NVIDIA GeForce RTX 4060 Ti", ram: "32GB DDR5", storage: "512GB SSD NVMe", cooling: "Жидкостное" }, price: "105 000 сом" },
+            { id: 5, name: "Gamer — 1753", image: "https://optim.tildacdn.com/stor3937-3334-4334-a531-666666323536/-/format/webp/16433422.jpg", specs: { cpu: "AMD Ryzen 9 7950X", gpu: "NVIDIA GeForce RTX 4080", ram: "32GB DDR5", storage: "1TB SSD NVMe", cooling: "Жидкостное" }, price: "245 000 сом" },
+            { id: 6, name: "Firestrike Core i9", image: "https://optim.tildacdn.com/stor3532-3937-4263-b061-313763383034/-/format/webp/76245523.jpg", specs: { cpu: "Intel Core i9-13900K", gpu: "NVIDIA GeForce RTX 4090", ram: "64GB DDR5", storage: "2TB SSD NVMe", cooling: "Жидкостное" }, price: "380 000 сом" },
+            { id: 7, name: "Зевс 3.0 V3", image: "https://optim.tildacdn.com/stor6532-6336-4936-b734-376262383539/-/format/webp/65040927.jpg", specs: { cpu: "Intel Core i7-13700K", gpu: "NVIDIA GeForce RTX 4070 Ti", ram: "32GB DDR5", storage: "1TB SSD NVMe", cooling: "Жидкостное" }, price: "175 000 сом" }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('pc_data_v3')) || defaultProducts;
+
+        function saveData() {
+            localStorage.setItem('pc_data_v3', JSON.stringify(products));
+            renderGallery();
+        }
+
+        // READ: Отрисовка галереи
+        function renderGallery() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            products.forEach(product => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.onclick = () => openDetail(product.id);
+                item.innerHTML = `
+                    <div class="img-container">
+                        <img src="${product.image}" alt="${product.name}">
+                    </div>
+                    <div class="image-caption">${product.name}</div>
+                `;
+                gallery.appendChild(item);
+            });
+        }
+
+        // READ: Детальный вид
+        function openDetail(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            document.getElementById('detailTitle').innerText = product.name;
+            document.getElementById('detailImg').src = product.image;
+            document.getElementById('detailPrice').innerText = product.price;
+            document.getElementById('detailSpecs').innerHTML = `
+                <b>Процессор:</b> ${product.specs.cpu}<br>
+                <b>Видеокарта:</b> ${product.specs.gpu}<br>
+                <b>ОЗУ:</b> ${product.specs.ram}<br>
+                <b>Память:</b> ${product.specs.storage}<br>
+                <b>Охлаждение:</b> ${product.specs.cooling}
+            `;
+            
+            document.getElementById('editBtn').onclick = () => openForm(id);
+            document.getElementById('deleteBtn').onclick = () => deletePC(id);
+
+            document.getElementById('detailModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // DELETE
+        function deletePC(id) {
+            if (confirm('Удалить эту сборку из каталога?')) {
+                products = products.filter(p => p.id !== id);
+                saveData();
+                closeModals();
+            }
+        }
+
+        // CREATE / UPDATE: Форма
+        function openForm(id = null) {
+            closeModals(); 
+            const form = document.getElementById('pcForm');
+            form.reset();
+
+            if (id) {
+                document.getElementById('formTitle').innerText = 'Редактировать ПК';
+                const p = products.find(prod => prod.id === id);
+                document.getElementById('pcId').value = p.id;
+                document.getElementById('pcName').value = p.name;
+                document.getElementById('pcImage').value = p.image;
+                document.getElementById('pcPrice').value = p.price;
+                document.getElementById('pcCpu').value = p.specs.cpu;
+                document.getElementById('pcGpu').value = p.specs.gpu;
+                document.getElementById('pcRam').value = p.specs.ram;
+                document.getElementById('pcStorage').value = p.specs.storage;
+                document.getElementById('pcCooling').value = p.specs.cooling;
+            } else {
+                document.getElementById('formTitle').innerText = 'Добавить ПК';
+                document.getElementById('pcId').value = '';
+            }
+
+            document.getElementById('formModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Сохранение
+        function savePC(event) {
+            event.preventDefault();
+            const idValue = document.getElementById('pcId').value;
+            const newProduct = {
+                id: idValue ? parseInt(idValue) : Date.now(), 
+                name: document.getElementById('pcName').value,
+                image: document.getElementById('pcImage').value,
+                price: document.getElementById('pcPrice').value,
+                specs: {
+                    cpu: document.getElementById('pcCpu').value,
+                    gpu: document.getElementById('pcGpu').value,
+                    ram: document.getElementById('pcRam').value,
+                    storage: document.getElementById('pcStorage').value,
+                    cooling: document.getElementById('pcCooling').value
+                }
+            };
+
+            if (idValue) {
+                const index = products.findIndex(p => p.id === parseInt(idValue));
+                products[index] = newProduct;
+            } else {
+                products.push(newProduct);
+            }
+
+            saveData();
+            closeModals();
+        }
+
+        // Закрытие окон
+        function closeModals(event) {
+            if (event && event.target.classList.contains('modal-content')) return;
+            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+            document.body.style.overflow = 'auto';
+        }
+
+        renderGallery();
+    </script>
+</body>
+</html>

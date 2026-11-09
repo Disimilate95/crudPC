@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>О нас</title>
+    <style>
+        .bt {
+            position: absolute;
+            top: 2.6px;
+            right: 0;
+            width: 35px;
+            height: 35px;
+            margin-left: 5px;
+            margin-right: 4px;
+            background-color: #1b1b1b;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s, right 0.3s, transform 0.4s;
+        }
+
+        .bt.spin {
+            animation: spinBtn 0.6s ease;
+        }
+
+        @keyframes spinBtn {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6); }
+            70% { box-shadow: 0 0 0 12px rgba(255,255,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        }
+
+        .bt.pulse { animation: pulse 0.6s ease-out; }
+
+        .vnutri {
+            position: absolute;
+            background-color: white;
+            width: 80px;
+            height: 40px;
+            right: 15px;
+            top: 20px;
+            border-radius: 50px;
+            z-index: 100;
+        }
+
+        .dark {
+            background-color: rgb(37, 37, 37);
+            color: white;
+        }
+
+        .dark .osnova {
+            background-color: #333;
+            color: white;
+        }
+
+        .moved {
+            right: calc(13vw - 141px);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: #DCDCDC;
+            transition: background-color 0.4s, color 0.4s;
+            color: black;
+        }
+
+        .osnova {
+            margin-top: 70px;
+            padding: 30px;
+            background-color: white;
+            font-size: 26px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            transition: background-color 0.4s, opacity 0.7s, transform 0.7s;
+            opacity: 0;
+            transform: scale(0.9) translateY(30px);
+        }
+
+        .osnova.visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        .osnova h2 {
+            margin-bottom: 25px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .osnova h2.visible {
+            opacity: 1;
+        }
+
+        .osnova p {
+            margin: 14px 0;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .osnova p.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 15px;
+            color: white;
+            position: relative;
+            z-index: 50;
+        }
+
+        .menu {
+            list-style: none;
+            display: flex;
+            gap: 15px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .menu li { display: inline; }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            transition: background 0.3s, transform 0.2s;
+            display: inline-block;
+        }
+
+        .menu a:hover {
+            background: #555;
+            border-radius: 5px;
+            transform: translateY(-2px);
+        }
+
+        .burger {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu {
+                display: none;
+                flex-direction: column;
+                background: #333;
+                position: absolute;
+                top: 45px;
+                left: 0;
+                width: 140px;
+                text-align: left;
+                padding-bottom: 15px;
+                z-index: 100;
+            }
+            .menu.active { display: flex; }
+            .burger { display: block; }
+            .bt { top: 2.5px; height: 35px; width: 35px; }
+            .moved { right: 37px; }
+            .vnutri { top: 10px; }
+            .osnova { width: 90%; font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <span class="vnutri">
+        <button class="bt" onclick="tema()"></button>
+    </span>
+    <nav class="navbar">
+        <ul class="menu">
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="#">О нас</a></li>
+            <li><a href="uslugi.html">Услуги</a></li>
+            <li><a href="contact.html">Контакты</a></li>
+        </ul>
+        <div class="burger">&#9776;</div>
+    </nav>
+    <div class="osnova" id="osnova">
+        <h2 id="aboutTitle">О нас</h2>
+        <p><b>Сайт сделал: Полосин Богдан</b></p>
+        <p><b>Группа: IT-126</b></p>
+        <p><b>Страна: Кыргызстан</b></p>
+        <p><b>Город: Токмок</b></p>
+        <p><b>Сайт был сделан: 2026.10.10</b></p>
+    </div>
+
+    <script>
+        document.querySelector('.burger').addEventListener('click', function () {
+            document.querySelector('.menu').classList.toggle('active');
+        });
+
+        function tema() {
+            document.body.classList.toggle('dark');
+            const btn = document.querySelector('.bt');
+            btn.classList.toggle('moved');
+            btn.classList.toggle('dark');
+            document.querySelector('.osnova').classList.toggle('dark');
+
+            btn.classList.remove('spin', 'pulse');
+            void btn.offsetWidth;
+            btn.classList.add('spin', 'pulse');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const block = document.getElementById('osnova');
+            const title = document.getElementById('aboutTitle');
+            const paragraphs = document.querySelectorAll('.osnova p');
+
+            setTimeout(() => block.classList.add('visible'), 200);
+            setTimeout(() => title.classList.add('visible'), 500);
+
+            paragraphs.forEach((p, i) => {
+                setTimeout(() => p.classList.add('visible'), 700 + i * 150);
+            });
+        });
+    </script>
+</body>
+</html>

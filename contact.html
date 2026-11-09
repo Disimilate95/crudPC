@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Контакты — Обратная связь</title>
+    <style>
+        .bt {
+            position: absolute;
+            top: 2.6px;
+            right: 0;
+            width: 35px;
+            height: 35px;
+            margin-left: 5px;
+            margin-right: 4px;
+            background-color: #1b1b1b;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s, right 0.3s, transform 0.4s;
+        }
+
+        .bt.spin {
+            animation: spinBtn 0.6s ease;
+        }
+
+        @keyframes spinBtn {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6); }
+            70% { box-shadow: 0 0 0 12px rgba(255,255,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        }
+
+        .bt.pulse {
+            animation: pulse 0.6s ease-out;
+        }
+
+        .vnutri {
+            position: absolute;
+            background-color: white;
+            width: 80px;
+            height: 40px;
+            right: 15px;
+            top: 20px;
+            border-radius: 50px;
+            z-index: 100;
+        }
+
+        .dark {
+            background-color: rgb(37, 37, 37);
+            color: white;
+        }
+
+        .dark .contacts {
+            background-color: #333;
+        }
+
+        .dark .slov {
+            color: white;
+        }
+
+        .moved {
+            right: calc(13vw - 141px);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: #DCDCDC;
+            transition: background-color 0.4s, color 0.4s;
+            color: black;
+        }
+
+        p { margin: 0; }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 15px;
+            color: white;
+            position: relative;
+            z-index: 50;
+        }
+
+        .menu {
+            list-style: none;
+            display: flex;
+            gap: 15px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .menu li { display: inline; }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            transition: background 0.3s, transform 0.2s;
+            display: inline-block;
+        }
+
+        .menu a:hover {
+            background: #555;
+            border-radius: 5px;
+            transform: translateY(-2px);
+        }
+
+        .burger {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .contacts {
+            margin-top: 50px;
+            padding: 25px;
+            padding-top: 10px;
+            background: white;
+            font-size: 27px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            transition: background-color 0.4s, transform 0.5s, opacity 0.5s;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .contacts.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-title {
+            margin: 25px 0 15px;
+            font-size: 26px;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.6s, transform 0.6s;
+        }
+
+        .form-title.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .contact-form {
+            max-width: 420px;
+            margin: 0 auto;
+            text-align: left;
+            font-size: 18px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .field.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .field input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.2s, background 0.3s;
+        }
+
+        .field input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        .field input.valid { border-color: #28a745; }
+        .field input.invalid { border-color: #d9534f; }
+
+        .error {
+            display: none;
+            color: #d9534f;
+            font-size: 14px;
+            margin-top: 4px;
+            animation: shake 0.4s ease;
+        }
+
+        .field input.invalid + .error { display: block; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .send {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            color: white;
+            background: #333;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        .send.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .send:hover {
+            background: #555;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .send:active { transform: scale(0.98); }
+
+        .success {
+            display: none;
+            margin-top: 18px;
+            color: #28a745;
+            font-size: 18px;
+            text-align: center;
+            animation: successPop 0.5s ease;
+        }
+
+        @keyframes successPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .dark .field input {
+            background: #444;
+            color: white;
+            border-color: #666;
+        }
+
+        .dark .field input:focus {
+            border-color: #4da3ff;
+            box-shadow: 0 0 0 4px rgba(77, 163, 255, 0.25);
+        }
+
+        .dark .field input.valid { border-color: #28a745; }
+        .dark .field input.invalid { border-color: #d9534f; }
+
+        .dark .send { background: #111; }
+        .dark .send:hover { background: #333; }
+
+        @media (max-width: 768px) {
+            .menu {
+                display: none;
+                flex-direction: column;
+                background: #333;
+                position: absolute;
+                top: 45px;
+                left: 0;
+                width: 140px;
+                text-align: left;
+                padding-bottom: 15px;
+                z-index: 100;
+            }
+            .menu.active { display: flex; }
+            .burger { display: block; }
+            .bt { top: 2.5px; height: 35px; width: 35px; }
+            .moved { right: 37px; }
+            .vnutri { top: 10px; }
+            .contacts { width: 90%; font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <span class="vnutri">
+        <button class="bt" id="themeBtn" onclick="tema()"></button>
+    </span>
+    <nav class="navbar">
+        <ul class="menu">
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="onas.html">О нас</a></li>
+            <li><a href="uslugi.html">Услуги</a></li>
+            <li><a href="#contacts">Контакты</a></li>
+        </ul>
+        <div class="burger">&#9776;</div>
+    </nav>
+
+    <div class="contacts" id="contacts">
+        <h2 class="form-title" id="formTitle">Обратная связь</h2>
+        <form class="contact-form" id="contactForm" novalidate>
+            <div class="field" id="fieldFio">
+                <label for="fio">ФИО</label>
+                <input type="text" id="fio" placeholder="Иванов Иван Иванович" autocomplete="name">
+                <div class="error">Введите 2–3 слова с заглавной буквы, только буквы (напр. Иванов Иван)</div>
+            </div>
+            <div class="field" id="fieldPhone">
+                <label for="phone">Номер телефона</label>
+                <input type="tel" id="phone" placeholder="+996 559 646 063" autocomplete="tel">
+                <div class="error">Формат: +996 XXX XXX XXX</div>
+            </div>
+            <div class="field" id="fieldEmail">
+                <label for="email">Почта</label>
+                <input type="email" id="email" placeholder="name@example.com" autocomplete="email">
+                <div class="error">Введите корректный email (напр. name@example.com)</div>
+            </div>
+            <button type="submit" class="send" id="sendBtn">Отправить</button>
+            <div class="success" id="success">Форма отправлена</div>
+        </form>
+    </div>
+
+    <script src="validation.js"></script>
+    <script>
+        document.querySelector('.burger').addEventListener('click', function () {
+            document.querySelector('.menu').classList.toggle('active');
+        });
+
+        function tema() {
+            document.body.classList.toggle('dark');
+            const btn = document.querySelector('.bt');
+            btn.classList.toggle('moved');
+            btn.classList.toggle('dark');
+            document.querySelector('.contacts').classList.toggle('dark');
+
+            btn.classList.remove('spin', 'pulse');
+            void btn.offsetWidth;
+            btn.classList.add('spin', 'pulse');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const contacts = document.getElementById('contacts');
+            const title = document.getElementById('formTitle');
+            const fields = [
+                document.getElementById('fieldFio'),
+                document.getElementById('fieldPhone'),
+                document.getElementById('fieldEmail')
+            ];
+            const sendBtn = document.getElementById('sendBtn');
+
+            setTimeout(() => contacts.classList.add('visible'), 150);
+            setTimeout(() => title.classList.add('visible'), 350);
+
+            fields.forEach((field, i) => {
+                setTimeout(() => field.classList.add('visible'), 500 + i * 150);
+            });
+
+            setTimeout(() => sendBtn.classList.add('visible'), 1000);
+        });
+
+        document.querySelectorAll('.field input').forEach(input => {
+            input.addEventListener('focus', function () {
+                this.parentElement.style.transform = 'scale(1.01)';
+            });
+            input.addEventListener('blur', function () {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
